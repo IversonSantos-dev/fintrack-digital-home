@@ -1,6 +1,8 @@
 import { useAuth } from "@/hooks/useAuth";
+import { useRole } from "@/hooks/useRole";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { 
   Wallet, 
   Plus, 
@@ -9,13 +11,15 @@ import {
   Settings, 
   LogOut,
   Menu,
-  X 
+  X,
+  Shield
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function AppDashboard() {
   const { user, signOut } = useAuth();
+  const { isAdmin } = useRole();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -71,9 +75,17 @@ export default function AppDashboard() {
             {/* User Info */}
             <div className="flex items-center space-x-4">
               <div className="hidden sm:block text-right">
-                <p className="text-sm font-medium text-foreground">
-                  {user?.user_metadata?.full_name || user?.email}
-                </p>
+                <div className="flex items-center justify-end space-x-2">
+                  <p className="text-sm font-medium text-foreground">
+                    {user?.user_metadata?.full_name || user?.email}
+                  </p>
+                  {isAdmin && (
+                    <Badge variant="default" className="gradient-primary text-xs">
+                      <Shield className="w-3 h-3 mr-1" />
+                      Admin
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {user?.email}
                 </p>
@@ -129,6 +141,23 @@ export default function AppDashboard() {
             <Settings className="w-5 h-5 mr-3" />
             Configurações
           </Button>
+          
+          {isAdmin && (
+            <>
+              <div className="pt-4 pb-2 px-3">
+                <p className="text-xs font-semibold text-muted-foreground uppercase">
+                  Administração
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-primary"
+              >
+                <Shield className="w-5 h-5 mr-3" />
+                Painel Admin
+              </Button>
+            </>
+          )}
         </nav>
       </aside>
 
