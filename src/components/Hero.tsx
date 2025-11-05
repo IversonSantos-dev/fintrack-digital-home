@@ -27,14 +27,16 @@ export const Hero = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Button
                 size="lg"
+                onClick={() => window.location.href = "/auth"}
                 className="bg-secondary hover:bg-secondary-glow text-secondary-foreground shadow-strong hover:shadow-strong hover:scale-105 transition-smooth"
               >
                 <Download className="w-5 h-5 mr-2" />
-                Baixar Agora
+                Começar Agora
               </Button>
               <Button
                 size="lg"
                 variant="outline"
+                onClick={() => document.getElementById('funcionalidades')?.scrollIntoView({ behavior: 'smooth' })}
                 className="bg-card/10 backdrop-blur-sm border-primary-foreground/30 text-primary-foreground hover:bg-card/20 shadow-medium"
               >
                 <Play className="w-5 h-5 mr-2" />

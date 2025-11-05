@@ -63,10 +63,11 @@ export const Header = () => {
             <Button
               variant="default"
               size="sm"
+              onClick={() => window.location.href = "/auth"}
               className="hidden sm:flex items-center space-x-2 gradient-primary shadow-medium hover:shadow-strong transition-smooth"
             >
               <Download className="w-4 h-4" />
-              <span>Baixar App</span>
+              <span>Começar Agora</span>
             </Button>
 
             {/* Mobile menu button */}
@@ -96,10 +97,11 @@ export const Header = () => {
             <Button
               variant="default"
               size="sm"
+              onClick={() => window.location.href = "/auth"}
               className="w-full mt-4 gradient-primary shadow-medium"
             >
               <Download className="w-4 h-4 mr-2" />
-              Baixar App
+              Começar Agora
             </Button>
           </nav>
         )}
