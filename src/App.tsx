@@ -7,6 +7,9 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import AppDashboard from "./pages/App";
+import Transactions from "./pages/Transactions";
+import Settings from "./pages/Settings";
+import AdminPanel from "./pages/AdminPanel";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +30,30 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <AppDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/app/transactions" 
+            element={
+              <ProtectedRoute>
+                <Transactions />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/app/settings" 
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/app/admin" 
+            element={
+              <ProtectedRoute>
+                <AdminPanel />
               </ProtectedRoute>
             } 
           />
