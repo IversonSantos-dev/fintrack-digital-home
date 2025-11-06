@@ -8,6 +8,28 @@ import {
   Calendar,
   Download
 } from "lucide-react";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+} from "@/components/ui/chart";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart as RechartsPieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+  Legend,
+  Tooltip,
+} from "recharts";
 
 export default function Reports() {
   const monthlyData = [
@@ -20,12 +42,23 @@ export default function Reports() {
   ];
 
   const categories = [
-    { name: "Alimentação", value: 1200, color: "bg-primary" },
-    { name: "Transporte", value: 450, color: "bg-secondary" },
-    { name: "Moradia", value: 800, color: "bg-accent" },
-    { name: "Lazer", value: 350, color: "bg-muted" },
-    { name: "Outros", value: 447, color: "bg-muted-foreground" },
+    { name: "Alimentação", value: 1200, fill: "hsl(var(--primary))" },
+    { name: "Transporte", value: 450, fill: "hsl(var(--secondary))" },
+    { name: "Moradia", value: 800, fill: "hsl(var(--accent))" },
+    { name: "Lazer", value: 350, fill: "hsl(var(--chart-1))" },
+    { name: "Outros", value: 447, fill: "hsl(var(--chart-2))" },
   ];
+
+  const chartConfig = {
+    receitas: {
+      label: "Receitas",
+      color: "hsl(var(--primary))",
+    },
+    despesas: {
+      label: "Despesas",
+      color: "hsl(var(--destructive))",
+    },
+  };
 
   return (
     <div className="min-h-screen bg-background p-4 sm:p-6">
@@ -111,67 +144,99 @@ export default function Reports() {
           <h2 className="text-xl font-heading font-semibold text-foreground mb-6">
             Evolução Mensal
           </h2>
-          <div className="space-y-4">
-            {monthlyData.map((data, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground font-medium">{data.month}</span>
-                  <div className="flex items-center space-x-4">
-                    <span className="text-secondary">R$ {data.receitas.toLocaleString('pt-BR')}</span>
-                    <span className="text-destructive">R$ {data.despesas.toLocaleString('pt-BR')}</span>
-                  </div>
-                </div>
-                <div className="h-8 bg-muted rounded-lg overflow-hidden flex">
-                  <div 
-                    className="gradient-primary flex items-center justify-end pr-2 text-xs text-primary-foreground font-medium"
-                    style={{ width: `${(data.receitas / 10000) * 100}%` }}
-                  >
-                    {data.receitas > 5000 && 'Receitas'}
-                  </div>
-                  <div 
-                    className="bg-destructive/80 flex items-center justify-end pr-2 text-xs text-destructive-foreground font-medium"
-                    style={{ width: `${(data.despesas / 10000) * 100}%` }}
-                  >
-                    {data.despesas > 3000 && 'Despesas'}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={monthlyData}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis 
+                  dataKey="month" 
+                  className="text-xs"
+                  stroke="hsl(var(--muted-foreground))"
+                />
+                <YAxis 
+                  className="text-xs"
+                  stroke="hsl(var(--muted-foreground))"
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartLegend content={<ChartLegendContent />} />
+                <Bar 
+                  dataKey="receitas" 
+                  fill="hsl(var(--primary))" 
+                  radius={[8, 8, 0, 0]}
+                />
+                <Bar 
+                  dataKey="despesas" 
+                  fill="hsl(var(--destructive))" 
+                  radius={[8, 8, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
         </Card>
 
-        {/* Category Breakdown */}
-        <Card className="p-6 border-border shadow-soft">
-          <h2 className="text-xl font-heading font-semibold text-foreground mb-6">
-            Despesas por Categoria
-          </h2>
-          <div className="space-y-4">
-            {categories.map((category, index) => {
-              const total = categories.reduce((sum, cat) => sum + cat.value, 0);
-              const percentage = ((category.value / total) * 100).toFixed(1);
-              
-              return (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-foreground font-medium">{category.name}</span>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-muted-foreground">{percentage}%</span>
-                      <span className="text-foreground font-semibold">
-                        R$ {category.value.toLocaleString('pt-BR')}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="h-3 bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full ${category.color} transition-all duration-300`}
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </Card>
+        {/* Category Breakdown - Pie Chart */}
+        <div className="grid lg:grid-cols-2 gap-6">
+          <Card className="p-6 border-border shadow-soft">
+            <h2 className="text-xl font-heading font-semibold text-foreground mb-6">
+              Despesas por Categoria
+            </h2>
+            <ChartContainer config={chartConfig} className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <RechartsPieChart>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Pie
+                    data={categories}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {categories.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                </RechartsPieChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </Card>
+
+          <Card className="p-6 border-border shadow-soft">
+            <h2 className="text-xl font-heading font-semibold text-foreground mb-6">
+              Tendência de Saldo
+            </h2>
+            <ChartContainer config={chartConfig} className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={monthlyData.map(d => ({
+                  ...d,
+                  saldo: d.receitas - d.despesas
+                }))}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis 
+                    dataKey="month" 
+                    className="text-xs"
+                    stroke="hsl(var(--muted-foreground))"
+                  />
+                  <YAxis 
+                    className="text-xs"
+                    stroke="hsl(var(--muted-foreground))"
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="saldo" 
+                    stroke="hsl(var(--primary))" 
+                    strokeWidth={3}
+                    dot={{ fill: "hsl(var(--primary))", r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </Card>
+        </div>
       </div>
     </div>
   );
