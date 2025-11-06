@@ -10,6 +10,7 @@ import AppDashboard from "./pages/App";
 import Transactions from "./pages/Transactions";
 import Settings from "./pages/Settings";
 import AdminPanel from "./pages/AdminPanel";
+import Reports from "./pages/Reports";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
@@ -38,6 +39,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <Transactions />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/app/reports" 
+            element={
+              <ProtectedRoute>
+                <Reports />
               </ProtectedRoute>
             } 
           />
