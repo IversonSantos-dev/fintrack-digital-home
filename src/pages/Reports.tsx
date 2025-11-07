@@ -10,6 +10,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState, useMemo } from "react";
 import {
   ChartContainer,
   ChartTooltip,
@@ -33,10 +34,54 @@ import {
   Tooltip,
 } from "recharts";
 
+type PeriodFilter = "current" | "3months" | "6months" | "year";
+
 export default function Reports() {
   const navigate = useNavigate();
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodFilter>("6months");
   
-  const monthlyData = [
+  const allMonthlyData = [
+    { month: "Jan", receitas: 4500, despesas: 2800 },
+    { month: "Fev", receitas: 5200, despesas: 3100 },
+    { month: "Mar", receitas: 4800, despesas: 2900 },
+    { month: "Abr", receitas: 6100, despesas: 3400 },
+    { month: "Mai", receitas: 5500, despesas: 3200 },
+    { month: "Jun", receitas: 8500, despesas: 3247 },
+    { month: "Jul", receitas: 7200, despesas: 3100 },
+    { month: "Ago", receitas: 6800, despesas: 2950 },
+    { month: "Set", receitas: 7500, despesas: 3300 },
+    { month: "Out", receitas: 6900, despesas: 3150 },
+    { month: "Nov", receitas: 7800, despesas: 3400 },
+    { month: "Dez", receitas: 8200, despesas: 3600 },
+  ];
+
+  const monthlyData = useMemo(() => {
+    const currentMonth = new Date().getMonth(); // 0-11
+    
+    switch (selectedPeriod) {
+      case "current":
+        return [allMonthlyData[currentMonth]];
+      case "3months":
+        return allMonthlyData.slice(Math.max(0, currentMonth - 2), currentMonth + 1);
+      case "6months":
+        return allMonthlyData.slice(Math.max(0, currentMonth - 5), currentMonth + 1);
+      case "year":
+        return allMonthlyData;
+      default:
+        return allMonthlyData;
+    }
+  }, [selectedPeriod]);
+
+  const summary = useMemo(() => {
+    const totalReceitas = monthlyData.reduce((acc, d) => acc + d.receitas, 0);
+    const totalDespesas = monthlyData.reduce((acc, d) => acc + d.despesas, 0);
+    const saldo = totalReceitas - totalDespesas;
+    const taxaEconomia = totalReceitas > 0 ? ((saldo / totalReceitas) * 100).toFixed(1) : "0.0";
+    
+    return { totalReceitas, totalDespesas, saldo, taxaEconomia };
+  }, [monthlyData]);
+  
+  const monthlyData_old = [
     { month: "Jan", receitas: 4500, despesas: 2800 },
     { month: "Fev", receitas: 5200, despesas: 3100 },
     { month: "Mar", receitas: 4800, despesas: 2900 },
@@ -95,13 +140,41 @@ export default function Reports() {
 
         {/* Period Selector */}
         <Card className="p-4 border-border shadow-soft">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 flex-wrap gap-2">
             <Calendar className="w-5 h-5 text-muted-foreground" />
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm">Mês Atual</Button>
-              <Button variant="ghost" size="sm">Últimos 3 Meses</Button>
-              <Button variant="ghost" size="sm">Últimos 6 Meses</Button>
-              <Button variant="ghost" size="sm">Ano Atual</Button>
+            <div className="flex items-center space-x-2 flex-wrap gap-2">
+              <Button 
+                variant={selectedPeriod === "current" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedPeriod("current")}
+                className={selectedPeriod === "current" ? "gradient-primary" : ""}
+              >
+                Mês Atual
+              </Button>
+              <Button 
+                variant={selectedPeriod === "3months" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setSelectedPeriod("3months")}
+                className={selectedPeriod === "3months" ? "gradient-primary" : ""}
+              >
+                Últimos 3 Meses
+              </Button>
+              <Button 
+                variant={selectedPeriod === "6months" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setSelectedPeriod("6months")}
+                className={selectedPeriod === "6months" ? "gradient-primary" : ""}
+              >
+                Últimos 6 Meses
+              </Button>
+              <Button 
+                variant={selectedPeriod === "year" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setSelectedPeriod("year")}
+                className={selectedPeriod === "year" ? "gradient-primary" : ""}
+              >
+                Ano Atual
+              </Button>
             </div>
           </div>
         </Card>
@@ -115,8 +188,10 @@ export default function Reports() {
               </div>
             </div>
             <p className="text-sm text-muted-foreground mb-1">Total Receitas</p>
-            <p className="text-2xl font-bold text-foreground">R$ 34.600,00</p>
-            <p className="text-xs text-secondary mt-2">+18.5% vs período anterior</p>
+            <p className="text-2xl font-bold text-foreground">
+              R$ {summary.totalReceitas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </p>
+            <p className="text-xs text-secondary mt-2">Período selecionado</p>
           </Card>
 
           <Card className="p-6 border-border shadow-soft">
@@ -126,8 +201,10 @@ export default function Reports() {
               </div>
             </div>
             <p className="text-sm text-muted-foreground mb-1">Total Despesas</p>
-            <p className="text-2xl font-bold text-foreground">R$ 18.647,00</p>
-            <p className="text-xs text-destructive mt-2">+12.3% vs período anterior</p>
+            <p className="text-2xl font-bold text-foreground">
+              R$ {summary.totalDespesas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">Período selecionado</p>
           </Card>
 
           <Card className="p-6 border-border shadow-soft">
@@ -137,8 +214,12 @@ export default function Reports() {
               </div>
             </div>
             <p className="text-sm text-muted-foreground mb-1">Saldo Período</p>
-            <p className="text-2xl font-bold text-foreground">R$ 15.953,00</p>
-            <p className="text-xs text-secondary mt-2">+24.1% vs período anterior</p>
+            <p className="text-2xl font-bold text-foreground">
+              R$ {summary.saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </p>
+            <p className="text-xs text-secondary mt-2">
+              {summary.saldo >= 0 ? "Positivo" : "Negativo"}
+            </p>
           </Card>
 
           <Card className="p-6 border-border shadow-soft">
@@ -148,8 +229,8 @@ export default function Reports() {
               </div>
             </div>
             <p className="text-sm text-muted-foreground mb-1">Taxa de Economia</p>
-            <p className="text-2xl font-bold text-foreground">46.1%</p>
-            <p className="text-xs text-secondary mt-2">+5.2% vs período anterior</p>
+            <p className="text-2xl font-bold text-foreground">{summary.taxaEconomia}%</p>
+            <p className="text-xs text-secondary mt-2">Do total de receitas</p>
           </Card>
         </div>
 
