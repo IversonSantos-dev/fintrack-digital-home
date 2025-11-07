@@ -8,10 +8,13 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, User, Bell, Lock, Globe, Palette } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { CurrencySelector } from "@/components/CurrencySelector";
+import { useCurrencyStore } from "@/stores/useCurrencyStore";
 
 export default function Settings() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { currency } = useCurrencyStore();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -97,12 +100,10 @@ export default function Settings() {
                 <div>
                   <p className="font-medium">Moeda Padrão</p>
                   <p className="text-sm text-muted-foreground">
-                    BRL - Real Brasileiro
+                    {currency.code} - {currency.name}
                   </p>
                 </div>
-                <Button variant="outline" size="sm">
-                  Alterar
-                </Button>
+                <CurrencySelector />
               </div>
             </CardContent>
           </Card>
