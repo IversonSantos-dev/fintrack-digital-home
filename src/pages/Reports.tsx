@@ -6,8 +6,10 @@ import {
   TrendingDown,
   PieChart,
   Calendar,
-  Download
+  Download,
+  ArrowLeft
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
   ChartContainer,
   ChartTooltip,
@@ -32,6 +34,8 @@ import {
 } from "recharts";
 
 export default function Reports() {
+  const navigate = useNavigate();
+  
   const monthlyData = [
     { month: "Jan", receitas: 4500, despesas: 2800 },
     { month: "Fev", receitas: 5200, despesas: 3100 },
@@ -65,13 +69,23 @@ export default function Reports() {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-2">
-              Relatórios Financeiros
-            </h1>
-            <p className="text-muted-foreground">
-              Análise detalhada das suas finanças
-            </p>
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => navigate("/app")}
+              className="rounded-full"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-2">
+                Relatórios Financeiros
+              </h1>
+              <p className="text-muted-foreground">
+                Análise detalhada das suas finanças
+              </p>
+            </div>
           </div>
           <Button className="gradient-primary shadow-medium">
             <Download className="w-4 h-4 mr-2" />
