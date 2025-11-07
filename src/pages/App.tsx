@@ -17,12 +17,20 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { TransactionDialog } from "@/components/TransactionDialog";
 
 export default function AppDashboard() {
   const { user, signOut } = useAuth();
   const { isAdmin } = useRole();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogType, setDialogType] = useState<"income" | "expense" | "account" | "budget">("income");
   const navigate = useNavigate();
+
+  const openDialog = (type: "income" | "expense" | "account" | "budget") => {
+    setDialogType(type);
+    setDialogOpen(true);
+  };
 
   const stats = [
     {
@@ -225,24 +233,42 @@ export default function AppDashboard() {
               Ações Rápidas
             </h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Button className="gradient-primary shadow-medium">
+              <Button 
+                className="gradient-primary shadow-medium"
+                onClick={() => openDialog("income")}
+              >
                 <Plus className="w-5 h-5 mr-2" />
                 Nova Receita
               </Button>
-              <Button variant="outline">
+              <Button 
+                variant="outline"
+                onClick={() => openDialog("expense")}
+              >
                 <Plus className="w-5 h-5 mr-2" />
                 Nova Despesa
               </Button>
-              <Button variant="outline">
+              <Button 
+                variant="outline"
+                onClick={() => openDialog("account")}
+              >
                 <Plus className="w-5 h-5 mr-2" />
                 Nova Conta
               </Button>
-              <Button variant="outline">
+              <Button 
+                variant="outline"
+                onClick={() => openDialog("budget")}
+              >
                 <Plus className="w-5 h-5 mr-2" />
                 Novo Orçamento
               </Button>
             </div>
           </Card>
+
+          <TransactionDialog 
+            open={dialogOpen}
+            onOpenChange={setDialogOpen}
+            type={dialogType}
+          />
 
           {/* Recent Transactions */}
           <Card className="p-6 border-border shadow-soft">
