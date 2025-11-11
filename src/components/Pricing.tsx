@@ -5,11 +5,21 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+
+// Price IDs from Stripe
+const PRICE_IDS = {
+  pro: "price_1SSMWg4hxKzkGlDGMwIHVUwH",
+  premium: "price_1SSMXB4hxKzkGlDGECWx3XCL",
+} as const;
 
 export const Pricing = () => {
-  const { user } = useAuth();
-  const { subscription, upgradePlan, loading } = useSubscription();
+  const { user, session } = useAuth();
+  const { subscription, loading } = useSubscription();
   const navigate = useNavigate();
+  const [processingPlan, setProcessingPlan] = useState<string | null>(null);
+  
   const plans = [
     {
       name: "Free",
@@ -130,15 +140,41 @@ export const Pricing = () => {
                   }
 
                   const planType = plan.name.toLowerCase() as "pro" | "premium";
-                  const success = await upgradePlan(planType, 1);
-                  
-                  if (success) {
-                    navigate("/app");
+                  setProcessingPlan(planType);
+
+                  try {
+                    // Create Stripe checkout session
+                    const { data, error } = await supabase.functions.invoke("create-checkout", {
+                      body: { priceId: PRICE_IDS[planType] },
+                      headers: {
+                        Authorization: `Bearer ${session?.access_token}`,
+                      },
+                    });
+
+                    if (error) throw error;
+
+                    if (data?.url) {
+                      // Redirect to Stripe checkout
+                      window.location.href = data.url;
+                    } else {
+                      throw new Error("URL do checkout não retornada");
+                    }
+                  } catch (error: any) {
+                    console.error("Erro ao criar checkout:", error);
+                    toast.error("Erro ao processar pagamento. Tente novamente.");
+                  } finally {
+                    setProcessingPlan(null);
                   }
                 }}
-                disabled={loading || (subscription?.plan_type === plan.name.toLowerCase() && subscription?.status === "active")}
+                disabled={
+                  loading || 
+                  processingPlan === plan.name.toLowerCase() ||
+                  (subscription?.plan_type === plan.name.toLowerCase() && subscription?.status === "active")
+                }
               >
-                {subscription?.plan_type === plan.name.toLowerCase() && subscription?.status === "active"
+                {processingPlan === plan.name.toLowerCase()
+                  ? "Processando..."
+                  : subscription?.plan_type === plan.name.toLowerCase() && subscription?.status === "active"
                   ? "Plano Atual"
                   : plan.cta}
               </Button>
