@@ -1,8 +1,15 @@
 import { Check, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export const Pricing = () => {
+  const { user } = useAuth();
+  const { subscription, upgradePlan, loading } = useSubscription();
+  const navigate = useNavigate();
   const plans = [
     {
       name: "Free",
@@ -110,8 +117,30 @@ export const Pricing = () => {
                     ? "gradient-primary shadow-medium hover:shadow-strong"
                     : "bg-card text-foreground border border-border hover:bg-muted"
                 } transition-smooth`}
+                onClick={async () => {
+                  if (!user) {
+                    toast.info("Faça login para assinar um plano");
+                    navigate("/auth");
+                    return;
+                  }
+
+                  if (plan.name === "Free") {
+                    navigate("/app");
+                    return;
+                  }
+
+                  const planType = plan.name.toLowerCase() as "pro" | "premium";
+                  const success = await upgradePlan(planType, 1);
+                  
+                  if (success) {
+                    navigate("/app");
+                  }
+                }}
+                disabled={loading || (subscription?.plan_type === plan.name.toLowerCase() && subscription?.status === "active")}
               >
-                {plan.cta}
+                {subscription?.plan_type === plan.name.toLowerCase() && subscription?.status === "active"
+                  ? "Plano Atual"
+                  : plan.cta}
               </Button>
             </Card>
           ))}

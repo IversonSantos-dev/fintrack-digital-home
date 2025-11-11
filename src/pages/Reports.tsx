@@ -33,6 +33,7 @@ import {
   Legend,
   Tooltip,
 } from "recharts";
+import { PlanGuard } from "@/components/PlanGuard";
 
 type PeriodFilter = "current" | "3months" | "6months" | "year";
 
@@ -110,8 +111,9 @@ export default function Reports() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <PlanGuard requiredPlan="pro">
+      <div className="min-h-screen bg-background p-4 sm:p-6">
+        <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -333,6 +335,7 @@ export default function Reports() {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </PlanGuard>
   );
 }

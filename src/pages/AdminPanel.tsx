@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Users, Shield, Activity, Database, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { PlanGuard } from "@/components/PlanGuard";
 
 export default function AdminPanel() {
   const { user } = useAuth();
@@ -84,8 +85,9 @@ export default function AdminPanel() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-      <div className="container mx-auto p-6 max-w-7xl">
+    <PlanGuard requiredPlan="premium">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+        <div className="container mx-auto p-6 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-4">
@@ -218,6 +220,7 @@ export default function AdminPanel() {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </PlanGuard>
   );
 }
