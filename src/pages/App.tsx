@@ -13,7 +13,8 @@ import {
   Menu,
   X,
   Shield,
-  BarChart3
+  BarChart3,
+  CreditCard
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -160,6 +161,14 @@ export default function AppDashboard() {
           >
             <Settings className="w-5 h-5 mr-3" />
             Configurações
+          </Button>
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            onClick={() => navigate("/app/subscription")}
+          >
+            <CreditCard className="w-5 h-5 mr-3" />
+            Assinatura
           </Button>
           
           {isAdmin && (
