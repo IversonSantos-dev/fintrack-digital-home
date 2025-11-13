@@ -13,6 +13,7 @@ import AdminPanel from "./pages/AdminPanel";
 import Reports from "./pages/Reports";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
+import Subscription from "./pages/Subscription";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +64,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <AdminPanel />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/app/subscription" 
+            element={
+              <ProtectedRoute>
+                <Subscription />
               </ProtectedRoute>
             } 
           />
