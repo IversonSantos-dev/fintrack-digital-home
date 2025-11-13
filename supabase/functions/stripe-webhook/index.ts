@@ -55,8 +55,23 @@ serve(async (req) => {
           const priceId = subscription.items.data[0].price.id;
           const planType = priceToPlantypeMap[priceId] || "free";
           
+          console.log("Subscription timestamps:", {
+            start: subscription.current_period_start,
+            end: subscription.current_period_end
+          });
+          
+          if (!subscription.current_period_start || !subscription.current_period_end) {
+            console.error("Missing subscription period timestamps");
+            break;
+          }
+          
           const startDate = new Date(subscription.current_period_start * 1000);
           const endDate = new Date(subscription.current_period_end * 1000);
+          
+          if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+            console.error("Invalid date conversion:", { startDate, endDate });
+            break;
+          }
 
           // Update subscription in database
           const { error } = await supabaseAdmin
@@ -98,8 +113,18 @@ serve(async (req) => {
         const planType = priceToPlantypeMap[priceId] || "free";
         const status = subscription.status === "active" ? "active" : "cancelled";
         
+        if (!subscription.current_period_start || !subscription.current_period_end) {
+          console.error("Missing subscription period timestamps");
+          break;
+        }
+        
         const startDate = new Date(subscription.current_period_start * 1000);
         const endDate = new Date(subscription.current_period_end * 1000);
+        
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+          console.error("Invalid date conversion");
+          break;
+        }
 
         const { error } = await supabaseAdmin
           .from("subscriptions")
