@@ -7,6 +7,7 @@ import { ArrowLeft, Users, Shield, Activity, Database, AlertCircle } from "lucid
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { PlanGuard } from "@/components/PlanGuard";
+import { SubscriptionMetrics } from "@/components/SubscriptionMetrics";
 
 export default function AdminPanel() {
   const { user } = useAuth();
@@ -218,6 +219,11 @@ export default function AdminPanel() {
               </Button>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Subscription Metrics Dashboard */}
+        <div className="mt-8">
+          <SubscriptionMetrics />
         </div>
       </div>
       </div>

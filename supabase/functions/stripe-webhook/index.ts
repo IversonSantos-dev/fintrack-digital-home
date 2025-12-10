@@ -16,6 +16,37 @@ const priceToPlantypeMap: Record<string, "pro" | "premium"> = {
   "price_1SSMXB4hxKzkGlDGECWx3XCL": "premium",
 };
 
+// Helper function to send subscription emails
+async function sendSubscriptionEmail(
+  email: string,
+  type: "renewal_success" | "expiring_soon" | "cancelled",
+  userName?: string,
+  planType?: string,
+  expirationDate?: string
+) {
+  try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    
+    const response = await fetch(`${supabaseUrl}/functions/v1/send-subscription-email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${supabaseAnonKey}`,
+      },
+      body: JSON.stringify({ to: email, type, userName, planType, expirationDate }),
+    });
+
+    if (!response.ok) {
+      console.error("Failed to send email:", await response.text());
+    } else {
+      console.log(`Email sent successfully: ${type} to ${email}`);
+    }
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
+}
+
 serve(async (req) => {
   const signature = req.headers.get("stripe-signature");
   
@@ -88,6 +119,16 @@ serve(async (req) => {
             console.error("Error updating subscription:", error);
           } else {
             console.log("Subscription updated successfully for user:", userId);
+            
+            // Send welcome/renewal email
+            if (session.customer_email) {
+              await sendSubscriptionEmail(
+                session.customer_email,
+                "renewal_success",
+                undefined,
+                planType
+              );
+            }
           }
         }
         break;
@@ -138,6 +179,16 @@ serve(async (req) => {
 
         if (error) {
           console.error("Error updating subscription:", error);
+        } else {
+          // Send renewal email on successful update
+          if (subscription.status === "active" && customer.email) {
+            await sendSubscriptionEmail(
+              customer.email,
+              "renewal_success",
+              undefined,
+              planType
+            );
+          }
         }
         break;
       }
@@ -154,6 +205,9 @@ serve(async (req) => {
         
         if (!user) break;
 
+        const priceId = subscription.items.data[0].price.id;
+        const planType = priceToPlantypeMap[priceId] || "free";
+
         // Set to free plan
         const { error } = await supabaseAdmin
           .from("subscriptions")
@@ -167,6 +221,41 @@ serve(async (req) => {
 
         if (error) {
           console.error("Error cancelling subscription:", error);
+        } else {
+          // Send cancellation email
+          if (customer.email) {
+            await sendSubscriptionEmail(
+              customer.email,
+              "cancelled",
+              undefined,
+              planType
+            );
+          }
+        }
+        break;
+      }
+
+      case "invoice.payment_succeeded": {
+        const invoice = event.data.object as Stripe.Invoice;
+        console.log("Invoice payment succeeded:", invoice.id);
+        
+        // Only send email for subscription renewals (not first payment)
+        if (invoice.billing_reason === "subscription_cycle" && invoice.customer_email) {
+          const subscription = invoice.subscription 
+            ? await stripe.subscriptions.retrieve(invoice.subscription as string)
+            : null;
+          
+          if (subscription) {
+            const priceId = subscription.items.data[0].price.id;
+            const planType = priceToPlantypeMap[priceId] || "pro";
+            
+            await sendSubscriptionEmail(
+              invoice.customer_email,
+              "renewal_success",
+              undefined,
+              planType
+            );
+          }
         }
         break;
       }
