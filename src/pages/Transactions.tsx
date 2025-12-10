@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Plus, TrendingUp, TrendingDown, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { AdBanner } from "@/components/AdBanner";
 
 export default function Transactions() {
   const { user } = useAuth();
@@ -65,6 +66,9 @@ export default function Transactions() {
             Nova Transação
           </Button>
         </div>
+
+        {/* Ad Banner for Free Users */}
+        <AdBanner variant="horizontal" className="mb-6" />
 
         {/* Filters */}
         <Card className="mb-6">

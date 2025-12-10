@@ -19,6 +19,7 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TransactionDialog } from "@/components/TransactionDialog";
+import { AdBanner } from "@/components/AdBanner";
 
 export default function AppDashboard() {
   const { user, signOut } = useAuth();
@@ -194,6 +195,9 @@ export default function AppDashboard() {
       {/* Main Content */}
       <main className="md:ml-64 p-4 sm:p-6">
         <div className="max-w-7xl mx-auto space-y-6">
+          {/* Ad Banner for Free Users */}
+          <AdBanner variant="horizontal" />
+
           {/* Welcome */}
           <div>
             <h1 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-2">
