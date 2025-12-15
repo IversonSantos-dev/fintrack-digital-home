@@ -1,8 +1,9 @@
 import { useSubscription } from "@/hooks/useSubscription";
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
+import { useAdAnalytics } from "@/hooks/useAdAnalytics";
 
 interface AdBannerProps {
   variant?: "horizontal" | "sidebar" | "inline";
@@ -11,18 +12,21 @@ interface AdBannerProps {
 
 const adContent = [
   {
+    id: "upgrade_pro",
     title: "Upgrade para Pro",
     description: "Remova anúncios e desbloqueie recursos avançados",
     cta: "Fazer Upgrade",
     type: "internal",
   },
   {
+    id: "organize_finances",
     title: "Organize suas finanças",
     description: "Controle total dos seus gastos com relatórios detalhados",
     cta: "Conhecer Pro",
     type: "internal",
   },
   {
+    id: "no_limits",
     title: "Sem limites",
     description: "Transações ilimitadas e categorias personalizadas",
     cta: "Ver Planos",
@@ -35,25 +39,39 @@ export const AdBanner = ({ variant = "horizontal", className = "" }: AdBannerPro
   const [dismissed, setDismissed] = useState(false);
   const [currentAd] = useState(() => Math.floor(Math.random() * adContent.length));
   const navigate = useNavigate();
+  const { trackImpression, trackClick, trackDismiss } = useAdAnalytics();
+
+  const ad = adContent[currentAd];
+
+  // Track impression on mount
+  useEffect(() => {
+    if (!loading && subscription?.plan_type !== "pro" && subscription?.plan_type !== "premium") {
+      trackImpression(ad.id, variant);
+    }
+  }, [loading, subscription, ad.id, variant, trackImpression]);
 
   // Don't show ads for pro/premium users or while loading
   if (loading) return null;
   if (subscription?.plan_type === "pro" || subscription?.plan_type === "premium") return null;
   if (dismissed) return null;
 
-  const ad = adContent[currentAd];
-
   const handleClick = () => {
+    trackClick(ad.id, variant);
     if (ad.type === "internal") {
       navigate("/#pricing");
     }
+  };
+
+  const handleDismiss = () => {
+    trackDismiss(ad.id, variant);
+    setDismissed(true);
   };
 
   if (variant === "horizontal") {
     return (
       <div className={`relative bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 border border-border/50 rounded-lg p-4 ${className}`}>
         <button
-          onClick={() => setDismissed(true)}
+          onClick={handleDismiss}
           className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors"
           aria-label="Fechar anúncio"
         >
@@ -77,7 +95,7 @@ export const AdBanner = ({ variant = "horizontal", className = "" }: AdBannerPro
     return (
       <div className={`relative bg-gradient-to-b from-secondary/50 to-secondary/30 border border-border/50 rounded-lg p-4 ${className}`}>
         <button
-          onClick={() => setDismissed(true)}
+          onClick={handleDismiss}
           className="absolute top-2 right-2 text-muted-foreground hover:text-foreground transition-colors"
           aria-label="Fechar anúncio"
         >
@@ -102,7 +120,7 @@ export const AdBanner = ({ variant = "horizontal", className = "" }: AdBannerPro
         {ad.cta}
       </Button>
       <button
-        onClick={() => setDismissed(true)}
+        onClick={handleDismiss}
         className="text-muted-foreground hover:text-foreground transition-colors ml-1"
         aria-label="Fechar"
       >

@@ -93,65 +93,75 @@ export default function Transactions() {
           </CardContent>
         </Card>
 
-        {/* Transactions List */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Histórico de Transações</CardTitle>
-            <CardDescription>
-              {transactions.length} transações encontradas
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {transactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      transaction.type === "income" 
-                        ? "bg-green-500/10 text-green-500" 
-                        : "bg-red-500/10 text-red-500"
-                    }`}>
-                      {transaction.type === "income" ? (
-                        <TrendingUp className="w-5 h-5" />
-                      ) : (
-                        <TrendingDown className="w-5 h-5" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">
-                        {transaction.description}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs">
-                          {transaction.category}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {transaction.account}
-                        </span>
+        {/* Content with Sidebar Ad */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Transactions List */}
+          <div className="lg:col-span-3">
+            <Card>
+              <CardHeader>
+                <CardTitle>Histórico de Transações</CardTitle>
+                <CardDescription>
+                  {transactions.length} transações encontradas
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {transactions.map((transaction) => (
+                    <div
+                      key={transaction.id}
+                      className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          transaction.type === "income" 
+                            ? "bg-green-500/10 text-green-500" 
+                            : "bg-red-500/10 text-red-500"
+                        }`}>
+                          {transaction.type === "income" ? (
+                            <TrendingUp className="w-5 h-5" />
+                          ) : (
+                            <TrendingDown className="w-5 h-5" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground">
+                            {transaction.description}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className="text-xs">
+                              {transaction.category}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {transaction.account}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-lg font-bold ${
+                          transaction.type === "income" 
+                            ? "text-green-500" 
+                            : "text-red-500"
+                        }`}>
+                          {transaction.type === "income" ? "+" : "-"}
+                          R$ {Math.abs(transaction.amount).toFixed(2)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(transaction.date).toLocaleDateString("pt-BR")}
+                        </p>
                       </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <p className={`text-lg font-bold ${
-                      transaction.type === "income" 
-                        ? "text-green-500" 
-                        : "text-red-500"
-                    }`}>
-                      {transaction.type === "income" ? "+" : "-"}
-                      R$ {Math.abs(transaction.amount).toFixed(2)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(transaction.date).toLocaleDateString("pt-BR")}
-                    </p>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar Ad */}
+          <div className="hidden lg:block">
+            <AdBanner variant="sidebar" className="sticky top-6" />
+          </div>
+        </div>
       </div>
     </div>
   );

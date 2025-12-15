@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { PlanGuard } from "@/components/PlanGuard";
 import { SubscriptionMetrics } from "@/components/SubscriptionMetrics";
+import { AdAnalytics } from "@/components/AdAnalytics";
 
 export default function AdminPanel() {
   const { user } = useAuth();
@@ -224,6 +225,11 @@ export default function AdminPanel() {
         {/* Subscription Metrics Dashboard */}
         <div className="mt-8">
           <SubscriptionMetrics />
+        </div>
+
+        {/* Ad Analytics Dashboard */}
+        <div className="mt-8">
+          <AdAnalytics />
         </div>
       </div>
       </div>

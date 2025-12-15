@@ -20,6 +20,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TransactionDialog } from "@/components/TransactionDialog";
 import { AdBanner } from "@/components/AdBanner";
+import { AdPopup } from "@/components/AdPopup";
 
 export default function AppDashboard() {
   const { user, signOut } = useAuth();
@@ -197,6 +198,9 @@ export default function AppDashboard() {
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Ad Banner for Free Users */}
           <AdBanner variant="horizontal" />
+
+          {/* Popup Ad for Free Users (shows after 30s) */}
+          <AdPopup delayMs={30000} />
 
           {/* Welcome */}
           <div>
