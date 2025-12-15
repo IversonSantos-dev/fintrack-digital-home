@@ -56,6 +56,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ad_analytics: {
+        Row: {
+          ad_id: string
+          ad_variant: string
+          created_at: string
+          event_type: string
+          id: string
+          page_url: string | null
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          ad_id: string
+          ad_variant: string
+          created_at?: string
+          event_type: string
+          id?: string
+          page_url?: string | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          ad_id?: string
+          ad_variant?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          page_url?: string | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       budgets: {
         Row: {
           amount: number
