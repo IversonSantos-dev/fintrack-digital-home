@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { PlanGuard } from "@/components/PlanGuard";
 import { SubscriptionMetrics } from "@/components/SubscriptionMetrics";
 import { AdAnalytics } from "@/components/AdAnalytics";
+import { AdSettingsPanel } from "@/components/AdSettingsPanel";
 
 export default function AdminPanel() {
   const { user } = useAuth();
@@ -220,6 +221,11 @@ export default function AdminPanel() {
               </Button>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Ad Settings Panel */}
+        <div className="mt-8">
+          <AdSettingsPanel />
         </div>
 
         {/* Subscription Metrics Dashboard */}
