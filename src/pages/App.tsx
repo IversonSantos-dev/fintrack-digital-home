@@ -199,8 +199,8 @@ export default function AppDashboard() {
           {/* Ad Banner for Free Users */}
           <AdBanner variant="horizontal" />
 
-          {/* Popup Ad for Free Users (shows after 30s) */}
-          <AdPopup delayMs={30000} />
+          {/* Popup Ad for Free Users */}
+          <AdPopup />
 
           {/* Welcome */}
           <div>

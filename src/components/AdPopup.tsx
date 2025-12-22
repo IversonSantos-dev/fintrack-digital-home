@@ -4,10 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAdAnalytics } from "@/hooks/useAdAnalytics";
-
-interface AdPopupProps {
-  delayMs?: number;
-}
+import { useAdSettings } from "@/hooks/useAdSettings";
 
 const popupContent = {
   id: "popup_upgrade",
@@ -17,8 +14,9 @@ const popupContent = {
   features: ["Transações ilimitadas", "Relatórios avançados", "Sem anúncios"],
 };
 
-export const AdPopup = ({ delayMs = 30000 }: AdPopupProps) => {
+export const AdPopup = () => {
   const { subscription, loading } = useSubscription();
+  const { settings, isLoading: settingsLoading } = useAdSettings();
   const [isVisible, setIsVisible] = useState(false);
   const [hasShown, setHasShown] = useState(false);
   const navigate = useNavigate();
@@ -32,10 +30,16 @@ export const AdPopup = ({ delayMs = 30000 }: AdPopupProps) => {
       return;
     }
 
+    // Don't show if popup is disabled
+    if (settingsLoading) return;
+    if (!settings.popup_enabled) return;
+
     // Don't show for pro/premium users
     if (loading) return;
     if (subscription?.plan_type === "pro" || subscription?.plan_type === "premium") return;
 
+    const delayMs = settings.popup_delay_seconds * 1000;
+    
     const timer = setTimeout(() => {
       setIsVisible(true);
       setHasShown(true);
@@ -44,7 +48,7 @@ export const AdPopup = ({ delayMs = 30000 }: AdPopupProps) => {
     }, delayMs);
 
     return () => clearTimeout(timer);
-  }, [loading, subscription, delayMs, trackImpression]);
+  }, [loading, subscription, settings.popup_enabled, settings.popup_delay_seconds, settingsLoading, trackImpression]);
 
   const handleClose = () => {
     setIsVisible(false);
