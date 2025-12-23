@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,16 +6,68 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, User, Bell, Lock, Globe, Palette } from "lucide-react";
+import { ArrowLeft, User, Bell, Lock, Palette, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { useCurrencyStore } from "@/stores/useCurrencyStore";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function Settings() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { currency } = useCurrencyStore();
+  const [isResetting, setIsResetting] = useState(false);
+
+  const handleResetData = async () => {
+    if (!user) return;
+    
+    setIsResetting(true);
+    try {
+      // Delete all transactions
+      const { error: transError } = await supabase
+        .from("transactions")
+        .delete()
+        .eq("user_id", user.id);
+      
+      if (transError) throw transError;
+
+      // Reset all account balances to zero
+      const { error: accountError } = await supabase
+        .from("accounts")
+        .update({ balance: 0 })
+        .eq("user_id", user.id);
+      
+      if (accountError) throw accountError;
+
+      // Delete all budgets
+      const { error: budgetError } = await supabase
+        .from("budgets")
+        .delete()
+        .eq("user_id", user.id);
+      
+      if (budgetError) throw budgetError;
+
+      toast.success("Dados resetados com sucesso! Todos os saldos estão zerados.");
+    } catch (error) {
+      console.error("Error resetting data:", error);
+      toast.error("Erro ao resetar dados. Tente novamente.");
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -174,6 +227,55 @@ export default function Settings() {
               <Button variant="destructive" className="w-full">
                 Excluir Conta
               </Button>
+            </CardContent>
+          </Card>
+
+          {/* Data Management */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center space-x-2">
+                <RotateCcw className="w-5 h-5 text-primary" />
+                <CardTitle>Gerenciamento de Dados</CardTitle>
+              </div>
+              <CardDescription>
+                Gerencie seus dados financeiros
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Resetar Dados</p>
+                  <p className="text-sm text-muted-foreground">
+                    Apaga todas as transações e zera os saldos das contas
+                  </p>
+                </div>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" disabled={isResetting}>
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Resetar
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta ação irá apagar todas as suas transações e zerar os saldos de todas as contas. 
+                        Esta ação não pode ser desfeita.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={handleResetData}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {isResetting ? "Resetando..." : "Confirmar Reset"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </CardContent>
           </Card>
         </div>
