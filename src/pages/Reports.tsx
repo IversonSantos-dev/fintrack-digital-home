@@ -7,8 +7,17 @@ import {
   PieChart,
   Calendar,
   Download,
-  ArrowLeft
+  ArrowLeft,
+  FileSpreadsheet,
+  FileText
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { exportToCSV, exportToPDF } from "@/utils/exportReports";
 import { useNavigate } from "react-router-dom";
 import { useState, useMemo } from "react";
 import {
@@ -134,10 +143,38 @@ export default function Reports() {
               </p>
             </div>
           </div>
-          <Button className="gradient-primary shadow-medium">
-            <Download className="w-4 h-4 mr-2" />
-            Exportar
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="gradient-primary shadow-medium">
+                <Download className="w-4 h-4 mr-2" />
+                Exportar
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => {
+                const transactions = monthlyData.flatMap((m, i) => [
+                  { id: `${i}-income`, date: `2024-${String(i + 1).padStart(2, '0')}-15`, description: `Receitas ${m.month}`, amount: m.receitas, type: 'income', category: { name: 'Diversos' }, account: { name: 'Principal' } },
+                  { id: `${i}-expense`, date: `2024-${String(i + 1).padStart(2, '0')}-20`, description: `Despesas ${m.month}`, amount: m.despesas, type: 'expense', category: { name: 'Diversos' }, account: { name: 'Principal' } }
+                ]);
+                const periodLabel = selectedPeriod === 'current' ? 'Mês Atual' : selectedPeriod === '3months' ? 'Últimos 3 Meses' : selectedPeriod === '6months' ? 'Últimos 6 Meses' : 'Ano Atual';
+                exportToCSV({ transactions, summary: { totalReceitas: summary.totalReceitas, totalDespesas: summary.totalDespesas, saldo: summary.saldo, period: periodLabel } });
+              }}>
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Exportar CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                const transactions = monthlyData.flatMap((m, i) => [
+                  { id: `${i}-income`, date: `2024-${String(i + 1).padStart(2, '0')}-15`, description: `Receitas ${m.month}`, amount: m.receitas, type: 'income', category: { name: 'Diversos' }, account: { name: 'Principal' } },
+                  { id: `${i}-expense`, date: `2024-${String(i + 1).padStart(2, '0')}-20`, description: `Despesas ${m.month}`, amount: m.despesas, type: 'expense', category: { name: 'Diversos' }, account: { name: 'Principal' } }
+                ]);
+                const periodLabel = selectedPeriod === 'current' ? 'Mês Atual' : selectedPeriod === '3months' ? 'Últimos 3 Meses' : selectedPeriod === '6months' ? 'Últimos 6 Meses' : 'Ano Atual';
+                exportToPDF({ transactions, summary: { totalReceitas: summary.totalReceitas, totalDespesas: summary.totalDespesas, saldo: summary.saldo, period: periodLabel } });
+              }}>
+                <FileText className="w-4 h-4 mr-2" />
+                Exportar PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Period Selector */}

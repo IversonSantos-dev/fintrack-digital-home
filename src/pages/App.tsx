@@ -21,10 +21,15 @@ import { useNavigate } from "react-router-dom";
 import { TransactionDialog } from "@/components/TransactionDialog";
 import { AdBanner } from "@/components/AdBanner";
 import { AdPopup } from "@/components/AdPopup";
+import { RecurringTransactionsCard } from "@/components/RecurringTransactionsCard";
+import { FinancialGoalsCard } from "@/components/FinancialGoalsCard";
+import { AIAnalysisCard } from "@/components/AIAnalysisCard";
+import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
 
 export default function AppDashboard() {
   const { user, signOut } = useAuth();
   const { isAdmin } = useRole();
+  useBudgetAlerts(); // Initialize budget alerts
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"income" | "expense" | "account" | "budget">("income");
@@ -286,6 +291,15 @@ export default function AppDashboard() {
             onOpenChange={setDialogOpen}
             type={dialogType}
           />
+
+          {/* Financial Goals */}
+          <FinancialGoalsCard />
+
+          {/* Recurring Transactions */}
+          <RecurringTransactionsCard />
+
+          {/* AI Analysis */}
+          <AIAnalysisCard />
 
           {/* Recent Transactions */}
           <Card className="p-6 border-border shadow-soft">
