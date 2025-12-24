@@ -2,44 +2,86 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, TrendingUp, TrendingDown, Filter } from "lucide-react";
+import { ArrowLeft, Plus, TrendingUp, TrendingDown, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { AdBanner } from "@/components/AdBanner";
+import { TransactionFilters, TransactionFiltersState } from "@/components/TransactionFilters";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface Transaction {
+  id: string;
+  description: string | null;
+  amount: number;
+  type: string;
+  category: { name: string; color: string } | null;
+  date: string;
+  account: { name: string } | null;
+}
 
 export default function Transactions() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<TransactionFiltersState>({
+    type: "all",
+    categoryId: null,
+    accountId: null,
+    dateFrom: null,
+    dateTo: null,
+    period: "all",
+  });
 
-  // Mock data - será substituído por dados reais do Supabase
-  const transactions = [
-    {
-      id: 1,
-      description: "Supermercado",
-      amount: -250.00,
-      type: "expense",
-      category: "Alimentação",
-      date: "2025-11-06",
-      account: "Carteira Principal"
-    },
-    {
-      id: 2,
-      description: "Salário",
-      amount: 5000.00,
-      type: "income",
-      category: "Salário",
-      date: "2025-11-05",
-      account: "Banco"
-    },
-    {
-      id: 3,
-      description: "Uber",
-      amount: -35.50,
-      type: "expense",
-      category: "Transporte",
-      date: "2025-11-04",
-      account: "Carteira Principal"
-    }
-  ];
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchTransactions = async () => {
+      setLoading(true);
+      
+      let query = supabase
+        .from("transactions")
+        .select(`
+          id,
+          description,
+          amount,
+          type,
+          date,
+          category:categories(name, color),
+          account:accounts(name)
+        `)
+        .eq("user_id", user.id)
+        .order("date", { ascending: false });
+
+      // Apply filters
+      if (filters.type !== "all") {
+        query = query.eq("type", filters.type);
+      }
+      if (filters.categoryId) {
+        query = query.eq("category_id", filters.categoryId);
+      }
+      if (filters.accountId) {
+        query = query.eq("account_id", filters.accountId);
+      }
+      if (filters.dateFrom) {
+        query = query.gte("date", filters.dateFrom.toISOString().split("T")[0]);
+      }
+      if (filters.dateTo) {
+        query = query.lte("date", filters.dateTo.toISOString().split("T")[0]);
+      }
+
+      const { data, error } = await query.limit(100);
+
+      if (error) {
+        console.error("Error fetching transactions:", error);
+      } else {
+        setTransactions(data as Transaction[] || []);
+      }
+      setLoading(false);
+    };
+
+    fetchTransactions();
+  }, [user, filters]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -70,28 +112,8 @@ export default function Transactions() {
         {/* Ad Banner for Free Users */}
         <AdBanner variant="horizontal" className="mb-6" />
 
-        {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="flex flex-wrap gap-3">
-              <Button variant="outline" size="sm">
-                <Filter className="w-4 h-4 mr-2" />
-                Filtros
-              </Button>
-              <Button variant="outline" size="sm">
-                Todas
-              </Button>
-              <Button variant="outline" size="sm">
-                <TrendingUp className="w-4 h-4 mr-2" />
-                Receitas
-              </Button>
-              <Button variant="outline" size="sm">
-                <TrendingDown className="w-4 h-4 mr-2" />
-                Despesas
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Advanced Filters */}
+        <TransactionFilters filters={filters} onFiltersChange={setFilters} />
 
         {/* Content with Sidebar Ad */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -129,10 +151,10 @@ export default function Transactions() {
                           </p>
                           <div className="flex items-center gap-2 mt-1">
                             <Badge variant="outline" className="text-xs">
-                              {transaction.category}
+                              {transaction.category?.name || "Sem categoria"}
                             </Badge>
                             <span className="text-xs text-muted-foreground">
-                              {transaction.account}
+                              {transaction.account?.name || "Sem conta"}
                             </span>
                           </div>
                         </div>
