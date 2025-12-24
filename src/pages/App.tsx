@@ -24,12 +24,16 @@ import { AdPopup } from "@/components/AdPopup";
 import { RecurringTransactionsCard } from "@/components/RecurringTransactionsCard";
 import { FinancialGoalsCard } from "@/components/FinancialGoalsCard";
 import { AIAnalysisCard } from "@/components/AIAnalysisCard";
+import { PatrimonyEvolutionChart } from "@/components/PatrimonyEvolutionChart";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
+import { useCacheEssentialData } from "@/hooks/useOfflineData";
 
 export default function AppDashboard() {
   const { user, signOut } = useAuth();
   const { isAdmin } = useRole();
   useBudgetAlerts(); // Initialize budget alerts
+  useCacheEssentialData(); // Cache data for offline use
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<"income" | "expense" | "account" | "budget">("income");
@@ -292,6 +296,9 @@ export default function AppDashboard() {
             type={dialogType}
           />
 
+          {/* Patrimony Evolution Chart */}
+          <PatrimonyEvolutionChart />
+
           {/* Financial Goals */}
           <FinancialGoalsCard />
 
@@ -300,6 +307,9 @@ export default function AppDashboard() {
 
           {/* AI Analysis */}
           <AIAnalysisCard />
+
+          {/* Offline Indicator */}
+          <OfflineIndicator />
 
           {/* Recent Transactions */}
           <Card className="p-6 border-border shadow-soft">
