@@ -26,6 +26,7 @@ import { FinancialGoalsCard } from "@/components/FinancialGoalsCard";
 import { AIAnalysisCard } from "@/components/AIAnalysisCard";
 import { PatrimonyEvolutionChart } from "@/components/PatrimonyEvolutionChart";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { ExpensesByCategoryChart } from "@/components/ExpensesByCategoryChart";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
 import { useCacheEssentialData } from "@/hooks/useOfflineData";
 
@@ -296,8 +297,11 @@ export default function AppDashboard() {
             type={dialogType}
           />
 
-          {/* Patrimony Evolution Chart */}
-          <PatrimonyEvolutionChart />
+          {/* Charts Row */}
+          <div className="grid lg:grid-cols-2 gap-6">
+            <PatrimonyEvolutionChart />
+            <ExpensesByCategoryChart />
+          </div>
 
           {/* Financial Goals */}
           <FinancialGoalsCard />
