@@ -44,6 +44,7 @@ export const Pricing = () => {
         "Contas ilimitadas",
         "Orçamentos inteligentes",
         "Relatórios personalizados",
+        "Análise financeira com IA",
         "Backup na nuvem",
         "Suporte prioritário",
         "Sem anúncios",
@@ -58,6 +59,7 @@ export const Pricing = () => {
       description: "Solução completa para investidores",
       features: [
         "Tudo do Pro +",
+        "Análise financeira com IA avançada",
         "Análise de investimentos",
         "Consultoria financeira",
         "Acesso antecipado",

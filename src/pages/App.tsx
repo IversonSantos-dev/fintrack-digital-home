@@ -24,6 +24,7 @@ import { AdPopup } from "@/components/AdPopup";
 import { RecurringTransactionsCard } from "@/components/RecurringTransactionsCard";
 import { FinancialGoalsCard } from "@/components/FinancialGoalsCard";
 import { AIAnalysisCard } from "@/components/AIAnalysisCard";
+import { PlanGuard } from "@/components/PlanGuard";
 import { PatrimonyEvolutionChart } from "@/components/PatrimonyEvolutionChart";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { ExpensesByCategoryChart } from "@/components/ExpensesByCategoryChart";
@@ -309,8 +310,10 @@ export default function AppDashboard() {
           {/* Recurring Transactions */}
           <RecurringTransactionsCard />
 
-          {/* AI Analysis */}
-          <AIAnalysisCard />
+          {/* AI Analysis - Pro/Premium only */}
+          <PlanGuard requiredPlan="pro">
+            <AIAnalysisCard />
+          </PlanGuard>
 
           {/* Offline Indicator */}
           <OfflineIndicator />
