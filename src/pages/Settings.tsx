@@ -44,6 +44,14 @@ export default function Settings() {
       
       if (transError) throw transError;
 
+      // Delete all recurring transactions
+      const { error: recurringError } = await supabase
+        .from("recurring_transactions")
+        .delete()
+        .eq("user_id", user.id);
+      
+      if (recurringError) throw recurringError;
+
       // Reset all account balances to zero
       const { error: accountError } = await supabase
         .from("accounts")
@@ -60,7 +68,20 @@ export default function Settings() {
       
       if (budgetError) throw budgetError;
 
+      // Reset all financial goals
+      const { error: goalsError } = await supabase
+        .from("financial_goals")
+        .update({ current_amount: 0, is_completed: false })
+        .eq("user_id", user.id);
+      
+      if (goalsError) throw goalsError;
+
       toast.success("Dados resetados com sucesso! Todos os saldos estão zerados.");
+      
+      // Force page reload to refresh all data
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       console.error("Error resetting data:", error);
       toast.error("Erro ao resetar dados. Tente novamente.");
