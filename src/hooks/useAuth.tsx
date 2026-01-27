@@ -2,49 +2,65 @@ import { create } from 'zustand';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 interface AuthState {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  initialized: boolean;
   setUser: (user: User | null) => void;
   setSession: (session: Session | null) => void;
   setLoading: (loading: boolean) => void;
+  setInitialized: (initialized: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   session: null,
   loading: true,
+  initialized: false,
   setUser: (user) => set({ user }),
   setSession: (session) => set({ session }),
   setLoading: (loading) => set({ loading }),
+  setInitialized: (initialized) => set({ initialized }),
 }));
 
+// Initialize auth listener once
+let authInitialized = false;
+
+const initializeAuth = () => {
+  if (authInitialized) return;
+  authInitialized = true;
+
+  const { setUser, setSession, setLoading, setInitialized } = useAuthStore.getState();
+
+  // Set up auth state listener
+  supabase.auth.onAuthStateChange((event, session) => {
+    setSession(session);
+    setUser(session?.user ?? null);
+    setLoading(false);
+    setInitialized(true);
+  });
+
+  // Check for existing session
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    setSession(session);
+    setUser(session?.user ?? null);
+    setLoading(false);
+    setInitialized(true);
+  });
+};
+
+// Initialize on module load
+initializeAuth();
+
 export const useAuth = () => {
-  const { user, session, loading, setUser, setSession, setLoading } = useAuthStore();
-  const navigate = useNavigate();
+  const { user, session, loading, initialized } = useAuthStore();
 
+  // Ensure auth is initialized when hook is used
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [setUser, setSession, setLoading]);
+    initializeAuth();
+  }, []);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
@@ -72,13 +88,14 @@ export const useAuth = () => {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    navigate('/auth');
+    // Navigation should be handled by the component calling signOut
+    window.location.href = '/auth';
   };
 
   return {
     user,
     session,
-    loading,
+    loading: loading && !initialized,
     signIn,
     signUp,
     signOut,
