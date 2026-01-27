@@ -16,7 +16,7 @@ import {
   BarChart3,
   CreditCard
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { TransactionDialog } from "@/components/TransactionDialog";
 import { AdBanner } from "@/components/AdBanner";
@@ -31,6 +31,8 @@ import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { ExpensesByCategoryChart } from "@/components/ExpensesByCategoryChart";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
 import { useCacheEssentialData } from "@/hooks/useOfflineData";
+import { supabase } from "@/integrations/supabase/client";
+import { startOfMonth, endOfMonth } from "date-fns";
 
 export default function AppDashboard() {
   const { user, signOut } = useAuth();
@@ -42,6 +44,63 @@ export default function AppDashboard() {
   const [dialogType, setDialogType] = useState<"income" | "expense" | "account" | "budget">("income");
   const navigate = useNavigate();
 
+  // Real data states
+  const [totalBalance, setTotalBalance] = useState(0);
+  const [monthlyIncome, setMonthlyIncome] = useState(0);
+  const [monthlyExpenses, setMonthlyExpenses] = useState(0);
+
+  // Fetch real financial data
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchFinancialData = async () => {
+      try {
+        // Fetch total balance from accounts
+        const { data: accounts } = await supabase
+          .from("accounts")
+          .select("balance")
+          .eq("user_id", user.id);
+
+        const total = accounts?.reduce((sum, acc) => sum + Number(acc.balance || 0), 0) || 0;
+        setTotalBalance(total);
+
+        // Fetch monthly transactions
+        const now = new Date();
+        const monthStart = startOfMonth(now).toISOString().split("T")[0];
+        const monthEnd = endOfMonth(now).toISOString().split("T")[0];
+
+        const { data: transactions } = await supabase
+          .from("transactions")
+          .select("amount, type")
+          .eq("user_id", user.id)
+          .gte("date", monthStart)
+          .lte("date", monthEnd);
+
+        const income = transactions
+          ?.filter((t) => t.type === "income")
+          .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+
+        const expenses = transactions
+          ?.filter((t) => t.type === "expense")
+          .reduce((sum, t) => sum + Number(t.amount), 0) || 0;
+
+        setMonthlyIncome(income);
+        setMonthlyExpenses(expenses);
+      } catch (error) {
+        console.error("Error fetching financial data:", error);
+      }
+    };
+
+    fetchFinancialData();
+  }, [user, dialogOpen]); // Refetch when dialog closes (new transaction added)
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+    }).format(value);
+  };
+
   const openDialog = (type: "income" | "expense" | "account" | "budget") => {
     setDialogType(type);
     setDialogOpen(true);
@@ -50,27 +109,22 @@ export default function AppDashboard() {
   const stats = [
     {
       label: "Saldo Total",
-      value: "R$ 5.847,32",
+      value: formatCurrency(totalBalance),
       icon: Wallet,
-      change: "+12.5%",
-      positive: true,
     },
     {
       label: "Receitas (mês)",
-      value: "R$ 8.500,00",
+      value: formatCurrency(monthlyIncome),
       icon: TrendingUp,
-      change: "+5.2%",
       positive: true,
     },
     {
       label: "Despesas (mês)",
-      value: "R$ 3.247,68",
+      value: formatCurrency(monthlyExpenses),
       icon: TrendingDown,
-      change: "-8.1%",
-      positive: true,
+      positive: false,
     },
   ];
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -237,18 +291,14 @@ export default function AppDashboard() {
                     <div className="w-12 h-12 rounded-xl gradient-card flex items-center justify-center">
                       <Icon className="w-6 h-6 text-primary" />
                     </div>
-                    <span
-                      className={`text-sm font-medium ${
-                        stat.positive ? "text-secondary" : "text-destructive"
-                      }`}
-                    >
-                      {stat.change}
-                    </span>
                   </div>
                   <p className="text-sm text-muted-foreground mb-1">
                     {stat.label}
                   </p>
-                  <p className="text-2xl font-bold text-foreground">
+                  <p className={`text-2xl font-bold ${
+                    stat.positive === true ? "text-secondary" : 
+                    stat.positive === false ? "text-destructive" : "text-foreground"
+                  }`}>
                     {stat.value}
                   </p>
                 </Card>
