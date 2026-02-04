@@ -39,12 +39,17 @@ export const useSubscription = () => {
         .from("subscriptions")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .eq("status", "active")
+        .order("created_at", { ascending: false })
+        .maybeSingle();
 
       if (error) throw error;
-      setSubscription(data as Subscription);
+      
+      // Se não há assinatura ativa, define como null (plano free)
+      setSubscription(data as Subscription | null);
     } catch (error) {
       console.error("Error fetching subscription:", error);
+      setSubscription(null);
     } finally {
       setLoading(false);
     }
