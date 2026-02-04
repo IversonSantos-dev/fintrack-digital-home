@@ -87,16 +87,18 @@ export const Pricing = () => {
           {plans.map((plan, index) => (
             <Card
               key={index}
-              className={`relative p-8 border-border hover:border-primary/50 transition-smooth shadow-soft hover:shadow-medium animate-fade-in-up ${
-                plan.popular
-                  ? "border-primary border-2 shadow-medium scale-105 md:scale-110"
-                  : ""
-              }`}
-              style={{ animationDelay: `${index * 0.1}s` }}
+              className={`relative p-8 border-border transition-all duration-500 ease-out shadow-soft 
+                hover:shadow-strong hover:-translate-y-2 hover:border-primary/60
+                opacity-0 animate-[fade-in_0.6s_ease-out_forwards]
+                ${plan.popular
+                  ? "border-primary border-2 shadow-medium md:scale-105 hover:scale-110"
+                  : "hover:scale-[1.02]"
+                }`}
+              style={{ animationDelay: `${index * 0.15}s` }}
             >
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-secondary text-secondary-foreground rounded-full text-sm font-semibold flex items-center space-x-1 shadow-medium">
-                  <Star className="w-4 h-4 fill-current" />
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-secondary text-secondary-foreground rounded-full text-sm font-semibold flex items-center space-x-1 shadow-medium animate-pulse">
+                  <Star className="w-4 h-4 fill-current animate-[spin_3s_linear_infinite]" />
                   <span>Mais Popular</span>
                 </div>
               )}
@@ -116,7 +118,11 @@ export const Pricing = () => {
 
               <ul className="space-y-3 mb-8">
                 {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-start space-x-3">
+                  <li 
+                    key={i} 
+                    className="flex items-start space-x-3 opacity-0 animate-[fade-in_0.4s_ease-out_forwards] hover:translate-x-1 transition-transform duration-200"
+                    style={{ animationDelay: `${index * 0.15 + 0.3 + i * 0.05}s` }}
+                  >
                     <Check className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
                     <span className="text-foreground">{feature}</span>
                   </li>
@@ -124,11 +130,11 @@ export const Pricing = () => {
               </ul>
 
               <Button
-                className={`w-full ${
+                className={`w-full transform transition-all duration-300 ${
                   plan.popular
-                    ? "gradient-primary shadow-medium hover:shadow-strong"
-                    : "bg-card text-foreground border border-border hover:bg-muted"
-                } transition-smooth`}
+                    ? "gradient-primary shadow-medium hover:shadow-strong hover:scale-105"
+                    : "bg-card text-foreground border border-border hover:bg-muted hover:scale-[1.02]"
+                }`}
                 onClick={async () => {
                   if (!user) {
                     toast.info("Faça login para assinar um plano");
